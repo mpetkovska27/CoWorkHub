@@ -22,6 +22,7 @@ CREATE TABLE MembershipPlan (
     type VARCHAR(50) NOT NULL,
     price NUMERIC(10,2) NOT NULL,
     discount_percentage DECIMAL(5,2) DEFAULT 0
+        CHECK (discount_percentage >= 0 AND discount_percentage <= 100)
 );
 
 CREATE TABLE Invoice(
@@ -39,6 +40,8 @@ CREATE TABLE Invoice(
 CREATE TABLE CoworkingCenter (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
+    contact_phone VARCHAR(20),
+    email VARCHAR(100),
     location_id INT NOT NULL,
     FOREIGN KEY (location_id) REFERENCES Location(id)
         ON DELETE RESTRICT ON UPDATE CASCADE
@@ -70,10 +73,11 @@ CREATE TABLE WorkspaceSetup (
         ON DELETE CASCADE ON UPDATE CASCADE,
     UNIQUE (workspace_id, version_number)
 );
+
 CREATE TABLE Contract (
     id SERIAL PRIMARY KEY,
     fixed_price NUMERIC(10,2),
-    status VARCHAR(20)
+    status VARCHAR(20) DEFAULT 'active'
         CHECK (status IN ('active','inactive','terminated')),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
@@ -93,7 +97,7 @@ CREATE TABLE Reservation (
     code VARCHAR(20) NOT NULL UNIQUE,
     responsible_member_id INT NOT NULL,
     setup_id INT NOT NULL,
-    invoice_id INT NOT NULL,
+    invoice_id INT NULL,
     contract_id INT NULL,
     FOREIGN KEY (responsible_member_id) REFERENCES Member(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -162,4 +166,9 @@ CREATE TABLE MemberEmail (
     FOREIGN KEY (member_id) REFERENCES Member(id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- index for faster queries
+CREATE INDEX idx_reservation_date ON Reservation (date);
+CREATE INDEX idx_reservation_member ON Reservation(responsible_member_id);
+CREATE INDEX idx_membership_member ON Membership(member_id);
 
