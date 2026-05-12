@@ -57,7 +57,7 @@ BEGIN
     IF existing_invoice_id IS NOT NULL THEN
         UPDATE Invoice
         SET total_amount = total_amount + slot_price,
-            tax_amount = (total_amount + slot_price) * 0.18
+            tax_amount = tax_amount + (slot_price * 0.18)
         WHERE id = existing_invoice_id;
 
         NEW.invoice_id := existing_invoice_id;
