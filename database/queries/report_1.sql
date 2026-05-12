@@ -15,3 +15,5 @@ GROUP BY DATE_TRUNC('month', i.issue_date), i.type
 ORDER BY month DESC, i.type;
 
 SELECT * FROM view_invoice_ledger;
+
+

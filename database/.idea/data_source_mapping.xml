@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/scratches/Query.sql" value="ec02a42f-3d95-4f7a-8704-fc30b414d78c" />
-    <file url="file://$PROJECT_DIR$/queries/coworkhub.sql" value="ec02a42f-3d95-4f7a-8704-fc30b414d78c" />
     <file url="file://$PROJECT_DIR$/queries/report_1.sql" value="ec02a42f-3d95-4f7a-8704-fc30b414d78c" />
     <file url="file://$PROJECT_DIR$/queries/report_2.sql" value="ec02a42f-3d95-4f7a-8704-fc30b414d78c" />
-    <file url="file://$PROJECT_DIR$/queries/report_3.sql" value="ec02a42f-3d95-4f7a-8704-fc30b414d78c" />
     <file url="file://$PROJECT_DIR$/queries/seed_data.sql" value="ec02a42f-3d95-4f7a-8704-fc30b414d78c" />
     <file url="file://$PROJECT_DIR$/queries/triggers.sql" value="ec02a42f-3d95-4f7a-8704-fc30b414d78c" />
   </component>
