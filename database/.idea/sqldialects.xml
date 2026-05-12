@@ -4,6 +4,7 @@
     <file url="file://$PROJECT_DIR$/queries/coworkhub.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/queries/report_1.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/queries/report_2.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/queries/report_3.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/queries/seed_data.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/queries/triggers.sql" dialect="PostgreSQL" />
   </component>

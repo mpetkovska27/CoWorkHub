@@ -82,17 +82,30 @@ EXECUTE FUNCTION auto_generate_invoice_on_contract();
 -- 3. Azuriranje na invoice pri otkaz na rezervacija
 CREATE OR REPLACE FUNCTION update_invoice_on_cancel()
 RETURNS TRIGGER AS $$
+DECLARE
+    slot_price NUMERIC(10,2);
 BEGIN
     IF NEW.status = 'cancelled' AND OLD.status != 'cancelled' THEN
-        UPDATE invoice
-        SET total_amount = 0, tax_amount = 0, status = 'refunded'
-        WHERE id = NEW.invoice_id;
+        IF OLD.contract_id IS NULL THEN
+            UPDATE invoice
+            SET total_amount = 0, tax_amount = 0, status = 'refunded'
+            WHERE id = NEW.invoice_id;
+        ELSE
+            SELECT price_per_slot INTO slot_price
+            FROM WorkspaceSetup WHERE id = NEW.setup_id;
+
+            UPDATE Invoice
+            SET total_amount = total_amount - slot_price,
+                tax_amount = tax_amount - (slot_price * 0.18)
+            WHERE id = NEW.invoice_id
+              AND total_amount >= slot_price;
+        end if;
     end if;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_update_invoice_on_cancel
+CREATE OR REPLACE TRIGGER trg_update_invoice_on_cancel
 AFTER UPDATE ON reservation
 FOR EACH ROW
 EXECUTE PROCEDURE update_invoice_on_cancel();
