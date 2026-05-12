@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Reports — CoworkHub{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Reports</h2>
+
+<!-- Report 1 — Invoice Status Ledger -->
+<div class="card mb-5">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Invoice Status Ledger</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-secondary">
+                <tr>
+                    {% for col in ledger_cols %}
+                        <th>{{ col|title }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in ledger_rows %}
+                    <tr>
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="{{ ledger_cols|length }}" class="text-center text-muted py-3">
+                            No data available
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Report 2 — Center Occupancy -->
+<div class="card mb-5">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Center Occupancy</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-secondary">
+                <tr>
+                    {% for col in occupancy_cols %}
+                        <th>{{ col|title }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in occupancy_rows %}
+                    <tr {% if row.over_capacity %}class="table-danger"{% endif %}>
+                        {% for cell in row.values %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="{{ occupancy_cols|length }}" class="text-center text-muted py-3">
+                            No data available
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
