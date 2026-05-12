@@ -27,5 +27,5 @@ urlpatterns = [
 path('', RedirectView.as_view(url='/admin/'), name='home'),
     path('admin/', admin.site.urls),
     path('reports/', views.reports, name='reports'),
-
+    path('reserve/', views.reserve, name='reserve'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

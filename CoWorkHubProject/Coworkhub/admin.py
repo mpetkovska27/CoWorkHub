@@ -6,6 +6,9 @@ from django.urls import reverse
 from .models import *
 # Register your models here.
 
+admin.site.site_header = "CoworkHub"
+admin.site.site_title = "CoworkHub"
+
 class MembershipInline(admin.TabularInline):
     model = Membership
     extra = 0
@@ -51,14 +54,14 @@ class MemberAdmin(admin.ModelAdmin):
 @admin.register(MembershipPlan)
 class MembershipPlanAdmin(admin.ModelAdmin):
     list_display = ('id', 'type', 'price', 'discount_percentage')
-    list_filter = ('type',)
+    # list_filter = ('type',)
     search_fields = ('type',)
 
 @admin.register(CoworkingCenter)
 class CoworkingCenterAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'location', 'contact_phone', 'email')
     search_fields = ('name', 'email')
-    list_filter = ('location__city',)
+    # list_filter = ('location__city',)
     inlines = [WorkspaceInline]
 
 @admin.register(Location)
@@ -69,7 +72,7 @@ class LocationAdmin(admin.ModelAdmin):
 @admin.register(Workspace)
 class WorkspaceAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'type', 'capacity', 'status', 'coworking_center',)
-    list_filter = ('status', 'type', 'coworking_center')
+    # list_filter = ('status', 'type', 'coworking_center')
     search_fields = ('name', 'coworking_center__name')
     autocomplete_fields = ('coworking_center',)
     inlines = [WorkspaceSetupInline]
@@ -78,7 +81,7 @@ class WorkspaceAdmin(admin.ModelAdmin):
 @admin.register(WorkspaceSetup)
 class WorkspaceSetupAdmin(admin.ModelAdmin):
     list_display = ('id', 'workspace', 'version_number', 'valid_from', 'price_per_slot')
-    list_filter = ('workspace__coworking_center',)
+    # list_filter = ('workspace__coworking_center',)
     search_fields = ('workspace__name',)
     inlines = [SetupEquipmentInline]
 
@@ -90,7 +93,7 @@ class EquipmentAdmin(admin.ModelAdmin):
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
     list_display = ('id', 'member', 'status', 'start_date', 'end_date', 'fixed_price', 'reservation_count',)
-    list_filter = ('status', 'start_date')
+    # list_filter = ('status', 'start_date')
     search_fields = ('member__first_name', 'member__last_name')
     autocomplete_fields = ('member',)
     date_hierarchy = 'start_date'
@@ -110,7 +113,7 @@ class ContractAdmin(admin.ModelAdmin):
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ('id', 'issue_date', 'total_amount', 'tax_amount', 'status', 'type',)
-    list_filter = ('status', 'type', 'issue_date')
+    # list_filter = ('status', 'type', 'issue_date')
     date_hierarchy = 'issue_date'
     ordering = ('-issue_date',)
     readonly_fields = ('issue_date', 'total_amount', 'tax_amount', 'type')
@@ -124,7 +127,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
     list_display = ('id', 'code', 'date', 'slot', 'status', 'responsible_member', 'workspace_name', 'invoice_link', 'contract')
-    list_filter = ('status', 'slot')
+    # list_filter = ('status', 'slot')
     exclude = ('invoice',)
     search_fields = ('code', 'responsible_member__first_name', 'responsible_member__last_name')
     date_hierarchy = 'date'

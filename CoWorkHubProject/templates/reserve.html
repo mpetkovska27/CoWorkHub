@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}New Reservation — CoworkHub{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">New Reservation</h5>
+            </div>
+            <div class="card-body">
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ form.responsible_member.label }}</label>
+                        {{ form.responsible_member }}
+                        {% if form.responsible_member.errors %}
+                            <div class="text-danger small">{{ form.responsible_member.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ form.setup.label }}</label>
+                        {{ form.setup }}
+                        {% if form.setup.errors %}
+                            <div class="text-danger small">{{ form.setup.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ form.date.label }}</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                            <div class="text-danger small">{{ form.date.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ form.slot.label }}</label>
+                        {{ form.slot }}
+                        {% if form.slot.errors %}
+                            <div class="text-danger small">{{ form.slot.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ form.contract.label }}</label>
+                        {{ form.contract }}
+                        <div class="form-text">Leave empty for a single reservation with automatic invoice.</div>
+                        {% if form.contract.errors %}
+                            <div class="text-danger small">{{ form.contract.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-dark">Create Reservation</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,5 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db import connection
+from django.contrib import messages
+from .forms import ReservationForm
+import uuid
+
+from .models import Reservation
+
+
 # Create your views here.
 
 def reports(request):
@@ -29,3 +36,25 @@ def reports(request):
         'occupancy_cols': occupancy_cols,
         'occupancy_rows': occupancy_rows,
     })
+
+def reserve(request):
+    if request.method == 'POST':
+        form = ReservationForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            code = 'RES-' + uuid.uuid4().hex[:8].upper()
+            Reservation.objects.create(
+                responsible_member=data['responsible_member'],
+                setup=data['setup'],
+                date=data['date'],
+                slot=data['slot'],
+                contract=data['contract'],
+                code=code,
+                status='pending',
+            )
+            messages.success(request, f'Reservation {code} created successfully.')
+            return redirect('reserve')
+    else:
+        form = ReservationForm()
+
+    return render(request, 'reserve.html', {'form': form})
