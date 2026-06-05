@@ -1,0 +1,108 @@
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.db import connection
+from django.contrib import messages
+import json
+import uuid
+from datetime import date
+from models import *
+
+# 1. GET /api/stats/
+def get_stats(request):
+    today = date.today()
+    active_reservations = Reservation.objects.filter(
+        date=today,
+        status__in=['pending', 'confirmed']
+    ).count()
+    free_workspaces = Workspace.objects.filter(
+        status='available'
+    ).count()
+
+    unpaid_invoices = Invoice.objects.filter(
+        status='unpaid'
+    ).count()
+
+    return JsonResponse({
+        'active_reservations': active_reservations,
+        'free_workspaces': free_workspaces,
+        'unpaid_invoices': unpaid_invoices,
+    })
+
+#2 GET /api/centers
+def get_centers_and_workspaces(request):
+    centers = CoworkingCenter.objects.all()
+    data = []
+    for center in centers:
+        workspaces = list(center.workspaces.values('id', 'name', 'type', 'capacity', 'status'))
+        data.append({
+            'id': center.id,
+            'name': center.name,
+            'contact_phone': center.contact_phone,
+            'workspaces': workspaces,
+        })
+    return JsonResponse(data, safe=False)
+
+# 3. GET & POST /api/reservations/
+@csrf_exempt
+def reservations_api(request):
+    if request.method == 'GET':
+        reservations = list(Reservation.objects.values(
+            'id', 'date', 'slot', 'status', 'code',
+            'responsible_member__first_name', 'responsible_member__last_name'
+        ))
+        return JsonResponse({'reservations': reservations})
+
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        code = 'RES-' + uuid.uuid4().hex[:8].upper()
+        res = Reservation.objects.create(
+            responsible_member_id=data['responsible_member_id'],
+            setup_id=data['setup_id'],
+            date=data['date'],
+            slot=data['slot'],
+            contract_id=data.get('contract_id'),
+            code=code,
+            status='pending',
+        )
+        return JsonResponse({'status': 'success', 'id': res.id, 'code': code}, status=201)
+
+# 4. PATCH /api/reservations/{id}/cancel/
+@csrf_exempt
+def reservation_cancel(request, pk):
+    reservation = Reservation.objects.get(id=pk)
+    reservation.status = 'cancelled'
+    reservation.save()
+    return JsonResponse({'status': 'cancelled'})
+
+#5. GET /api/invoices/
+def invoices_list(request):
+    invoices = list(Invoice.objects.values(
+        'id', 'issue_date', 'total_amount', 'tax_amount', 'status', 'type'
+    ))
+    return JsonResponse({'invoices': invoices})
+
+#6. GET /api/reports/
+def reports_api(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM view_invoice_ledger")
+        ledger_cols = [col[0] for col in cursor.description]
+        ledger_rows = [dict(zip(ledger_cols, row)) for row in cursor.fetchall()]
+
+        cursor.execute("SELECT * FROM center_occupancy")
+        occ_cols = [col[0] for col in cursor.description]
+        occ_rows = [dict(zip(occ_cols, row)) for row in cursor.fetchall()]
+
+    return JsonResponse({'invoice_ledger': ledger_rows, 'center_occupancy': occ_rows})
+
+#helpers
+def members_list(request):
+    members = list(Member.objects.values('id', 'first_name', 'last_name'))
+    return JsonResponse({'members': members})
+
+def setups_list(request):
+    setups = list(WorkspaceSetup.objects.values('id', 'version_number', 'workspace_id', 'price_per_slot'))
+    return JsonResponse({'setups': setups})
+
+def contracts_list(request):
+    contracts = list(Contract.objects.filter(status='active').values('id', 'member_id', 'start_date', 'end_date'))
+    return JsonResponse({'contracts': contracts})

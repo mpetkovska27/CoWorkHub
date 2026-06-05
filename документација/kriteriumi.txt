@@ -1,0 +1,41 @@
+Почитувани студенти, во врска со проектот, ви ги споделувам критериумите за оценување. Рокот начелно договоривме да биде 30.04. (може да биде продолжен, но за вас е подобро да го затворите што побрзо).
+Критериум:
+Сложеност
+Комплетност
+Користени напредни шаблони
+Користен напреден SQL
+Функционалност на апликацијата
+
+За да немаме дополнително обврска за пишување на семинарска, досегашните задачи треба да ги опишувате во документ во форматот во прилог. Засега имаме дефинирано Наслов на проектот, 1. Опис на функционалностите на системот (до 200 збора), 2. Опис на моделот на податоци (во тек) (една слика и до 200 збора) 3. Пристап до податоците (SQL и опис на 2 извештаи до 100 збора) 4. Опис на апликацијата (два екрани и текст до 100 збора). 5. Заклучок (до 50 збора).
+Консултации утре од 10 до 11 во М3.
+
+
+Recommended Structure
+admin.py — your main interface
+Register everything meaningful here. Django Admin gives you listing + CRUD essentially for free. Focus customization on:
+
+Reservation — list with date, slot, status, responsible member, invoice link
+Contract — list with member, status, dates
+Invoice — read-mostly ledger view, list with status, amounts, type
+Workspace / WorkspaceSetup — inline setups under workspace
+Member — inline emails, memberships
+
+views.py — two custom pages beyond admin
+Your professor wants two sites minimum. I'd suggest:
+Site 1 — Reservation Form (/reserve/)
+A clean public-facing or staff form to create a reservation. This is where forms.py earns its place — validate that the setup/date/slot combo isn't already taken, show available workspaces, etc. On valid submit, just call reservation.save() and let the trigger generate the invoice.
+Site 2 — Reports / Dashboard (/reports/)
+Surface your two SQL views here. Use raw SQL or unmanaged models to query view_revenue_by_client_type and center_occupancy. A simple template with two tables is enough — but it directly demonstrates your DB-first philosophy to the professor.
+urls.py
+Three entries: admin, /reserve/, /reports/.
+
+File Plan
+coworkhub/
+├── models.py        ✅ done
+├── admin.py         ← register + customize list displays
+├── forms.py         ← ReservationForm with slot validation
+├── views.py         ← ReservationFormView + ReportsView
+├── urls.py          ← wire the two custom pages
+└── templates/
+    ├── reserve.html
+    └── reports.html
