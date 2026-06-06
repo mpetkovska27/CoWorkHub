@@ -1,0 +1,47 @@
+.rbc-calendar {
+    background-color: #FAFAF7;
+    color: #1a1a1a;
+}
+
+.rbc-calendar * {
+    color: #1a1a1a;
+}
+
+.rbc-off-range-bg {
+    background-color: #ede8de;
+}
+
+.rbc-today {
+    background-color: #daeef7;
+}
+
+.rbc-toolbar button {
+    color: #3E2723;
+    border-color: #c8b8a2;
+}
+
+.rbc-toolbar button:hover {
+    background-color: #e8e0d5;
+}
+
+.rbc-toolbar button.rbc-active,
+.rbc-toolbar button.rbc-active:hover {
+    background-color: #2D6A4F;
+    color: white;
+    border-color: #2D6A4F;
+}
+
+
+.rbc-header {
+    background-color: #F5F0E8;
+    color: #3E2723;
+    padding: 0.5rem;
+    font-weight: 600;
+}
+
+.rbc-month-view,
+.rbc-day-bg,
+.rbc-header,
+.rbc-month-row {
+    border-color: #d6cfc4;
+}
