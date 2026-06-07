@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { mockInvoices } from '../api/mockData';
+import { useEffect, useState } from 'react';
+import api from '../api/axios';
 
 interface Invoice {
     id: number;
@@ -17,9 +17,14 @@ const SUMMARY_CARDS: { key: string; label: string; icon: string; color: string }
 ];
 
 export default function InvoicesPage() {
-    const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
 
-    const handleStatusChange = (id: number, newStatus: string) => {
+    useEffect(() => {
+        api.get('/invoices/').then(res => setInvoices(res.data.invoices));
+    }, []);
+
+    const handleStatusChange = async (id: number, newStatus: string) => {
+        await api.patch(`/invoices/${id}/status/`, { status: newStatus });
         setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, status: newStatus } : inv));
     };
 

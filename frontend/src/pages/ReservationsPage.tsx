@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import type { Event } from 'react-big-calendar';
@@ -6,7 +6,7 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../styles/calendar.css';
-import { mockReservations, mockMembers, mockSetups, mockContracts } from '../api/mockData';
+import api from '../api/axios';
 
 const localizer = dateFnsLocalizer({
     format,
@@ -44,47 +44,70 @@ const slotColors: Record<string, { bg: string; border: string }> = {
     evening:   { bg: '#fdd5cc', border: '#C1440E' },
 };
 
-const incomingSetupId = (workspaceId: number | undefined): string => {
-    if (!workspaceId) return '';
-    const match = mockSetups.find(s => s.workspace_id === workspaceId);
-    return match ? String(match.id) : '';
-};
-
 export default function ReservationsPage() {
     const location = useLocation();
     const incomingWorkspaceId = (location.state as { workspace_id?: number } | null)?.workspace_id;
 
-    const [reservations, setReservations] = useState<Reservation[]>(mockReservations as Reservation[]);
-    const members: Member[]     = mockMembers;
-    const setups: Setup[]       = mockSetups;
-    const contracts: Contract[] = mockContracts;
+    const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [members, setMembers]     = useState<Member[]>([]);
+    const [setups, setSetups]       = useState<Setup[]>([]);
+    const [contracts, setContracts] = useState<Contract[]>([]);
 
-    const [showModal, setShowModal]     = useState(!!incomingWorkspaceId);
-    const [viewMode, setViewMode]       = useState<'table' | 'calendar'>('table');
+    const [showModal, setShowModal]       = useState(false);
+    const [viewMode, setViewMode]         = useState<'table' | 'calendar'>('table');
     const [calendarDate, setCalendarDate] = useState(new Date());
-    const [message, setMessage]         = useState('');
-    const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+    const [message, setMessage]           = useState('');
+    const [messageType, setMessageType]   = useState<'success' | 'error'>('success');
     const [filterStatus, setFilterStatus] = useState('all');
 
     const [form, setForm] = useState({
         responsible_member_id: '',
-        setup_id: incomingSetupId(incomingWorkspaceId),
+        setup_id: '',
         date: '',
         slot: 'morning',
         contract_id: '',
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        api.get('/reservations/').then(res => setReservations(res.data.reservations));
+        api.get('/members/').then(res => setMembers(res.data.members));
+        api.get('/setups/').then(res => {
+            const loadedSetups: Setup[] = res.data.setups;
+            setSetups(loadedSetups);
+            if (incomingWorkspaceId) {
+                const match = loadedSetups.find(s => s.workspace_id === incomingWorkspaceId);
+                if (match) setForm(f => ({ ...f, setup_id: String(match.id) }));
+                setShowModal(true);
+            }
+        });
+        api.get('/contracts/').then(res => setContracts(res.data.contracts));
+    }, []);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setMessage('Reservation created successfully!');
-        setMessageType('success');
-        setShowModal(false);
-        setForm({ responsible_member_id: '', setup_id: '', date: '', slot: 'morning', contract_id: '' });
+        try {
+            await api.post('/reservations/', {
+                responsible_member_id: Number(form.responsible_member_id),
+                setup_id: Number(form.setup_id),
+                date: form.date,
+                slot: form.slot,
+                contract_id: form.contract_id ? Number(form.contract_id) : null,
+            });
+            await api.get('/reservations/').then(res => setReservations(res.data.reservations));
+            setMessage('Reservation created successfully!');
+            setMessageType('success');
+            setShowModal(false);
+            setForm({ responsible_member_id: '', setup_id: '', date: '', slot: 'morning', contract_id: '' });
+        } catch {
+            setMessage('Failed to create reservation.');
+            setMessageType('error');
+        }
         setTimeout(() => setMessage(''), 4000);
     };
 
-    const handleCancel = (id: number) => {
+    const handleCancel = async (id: number) => {
         if (!confirm('Cancel this reservation?')) return;
+        await api.patch(`/reservations/${id}/cancel/`);
         setReservations(prev => prev.map(r => r.id === id ? { ...r, status: 'cancelled' } : r));
     };
 
