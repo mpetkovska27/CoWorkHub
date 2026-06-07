@@ -5,7 +5,7 @@ from django.contrib import messages
 import json
 import uuid
 from datetime import date
-from models import *
+from .models import CoworkingCenter, Workspace, Reservation, Invoice, Member, WorkspaceSetup, Contract
 
 # 1. GET /api/stats/
 def get_stats(request):
@@ -83,16 +83,44 @@ def invoices_list(request):
 
 #6. GET /api/reports/
 def reports_api(request):
+    period = request.GET.get('period', 'today')
+
+    if period == 'week':
+        occupancy_query = """
+            SELECT * FROM center_occupancy
+            WHERE reservation_date >= CURRENT_DATE - INTERVAL '7 days'
+            ORDER BY reservation_date DESC
+        """
+    else:
+        occupancy_query = """
+            SELECT * FROM center_occupancy
+            WHERE reservation_date = CURRENT_DATE
+        """
+
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM view_invoice_ledger")
         ledger_cols = [col[0] for col in cursor.description]
         ledger_rows = [dict(zip(ledger_cols, row)) for row in cursor.fetchall()]
 
-        cursor.execute("SELECT * FROM center_occupancy")
+        cursor.execute(occupancy_query)
         occ_cols = [col[0] for col in cursor.description]
         occ_rows = [dict(zip(occ_cols, row)) for row in cursor.fetchall()]
 
     return JsonResponse({'invoice_ledger': ledger_rows, 'center_occupancy': occ_rows})
+
+# 6b. PATCH /api/invoices/{id}/status/
+@csrf_exempt
+def invoice_update_status(request, pk):
+    if request.method != 'PATCH':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        body = json.loads(request.body)
+        invoice = Invoice.objects.get(id=pk)
+        invoice.status = body['status']
+        invoice.save()
+        return JsonResponse({'id': invoice.id, 'status': invoice.status})
+    except Invoice.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
 
 #helpers
 def members_list(request):
