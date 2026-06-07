@@ -1,13 +1,36 @@
 # CoWorkHub
 
-A coworking space management system built with PostgreSQL, Django and React.
+A full-stack coworking space management system built with PostgreSQL, Django REST API, and React.
 
-## About
+## Overview
 
-CoWorkHub handles coworking center operations — reservations, invoices, members and contracts. It runs as three services: a PostgreSQL database, a Django REST backend, and a React frontend.
+CoWorkHub is a web application for managing coworking spaces — centers, workspaces, reservations, invoices, members and contracts. The system consists of three services: a PostgreSQL database, a Django backend API, and a React frontend.
 
 ```
 React (5173)  →  Django API (8000)  →  PostgreSQL (5432)
+```
+
+## Project Structure
+```
+CoWorkHub/
+├── CoWorkHubProject/        # Django backend
+│   ├── Coworkhub/
+│   │   ├── models.py        # Database models
+│   │   ├── api_views.py     # REST API endpoints
+│   │   └── api_urls.py      # URL routing
+│   ├── CoWorkHubProject/
+│   │   ├── settings.py
+│   │   └── urls.py
+│   └── requirements.txt
+├── frontend/                # React frontend
+│   ├── src/
+│   │   ├── pages/           # HomePage,            ReservationsPage, InvoicesPage, ReportsPage
+│   │   ├── api/             # axios.ts, mockData.ts
+│   │   ├── styles/          # calendar.css
+│   │   ├── App.tsx
+│   │   └── App.css
+│   └── package.json
+└── database/                # SQL scripts (DDL, views, triggers, reports)
 ```
 
 ## Database
@@ -27,7 +50,7 @@ Indexes are defined on reservation date, responsible member, and membership memb
 
 ## Backend — Django
 
-REST API built with plain `JsonResponse` (no DRF serializers). All endpoints are in `Coworkhub/api_views.py`.
+REST API built with `JsonResponse`. All endpoints are in `Coworkhub/api_views.py`:
 
 | Endpoint | Description |
 |---|---|
@@ -59,14 +82,18 @@ Frontend communicates with the backend via Axios (`baseURL: http://127.0.0.1:800
 
 ## Running Locally
 
+**Backend:**
 ```bash
-# Backend
 cd CoWorkHubProject
 pip install -r requirements.txt
 python manage.py runserver
+```
 
-# Frontend
+**Frontend:**
+```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+Open [http://localhost:5173](http://localhost:5173)
