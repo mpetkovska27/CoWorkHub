@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockStats, mockCenters } from '../api/mockData';
+import api from '../api/axios';
 
 interface Workspace {
     id: number;
@@ -19,15 +19,15 @@ interface Center {
 }
 
 interface Stats {
-    active_reservations_today: number;
+    active_reservations: number;
     free_workspaces: number;
     unpaid_invoices: number;
 }
 
 const STAT_CARDS: { key: keyof Stats; label: string; icon: string; color: string }[] = [
-    { key: 'active_reservations_today', label: 'Active Reservations Today', icon: '🗓', color: 'var(--primary)' },
-    { key: 'free_workspaces',           label: 'Free Workspaces',           icon: '🪑', color: 'var(--green)'   },
-    { key: 'unpaid_invoices',           label: 'Unpaid Invoices',           icon: '🧾', color: 'var(--yellow)'  },
+    { key: 'active_reservations', label: 'Active Reservations Today', icon: '🗓', color: 'var(--primary)' },
+    { key: 'free_workspaces',     label: 'Free Workspaces',           icon: '🪑', color: 'var(--green)'   },
+    { key: 'unpaid_invoices',     label: 'Unpaid Invoices',           icon: '🧾', color: 'var(--yellow)'  },
 ];
 
 const statusBadgeClass = (status: string) => {
@@ -37,10 +37,15 @@ const statusBadgeClass = (status: string) => {
 };
 
 export default function HomePage() {
-    const stats: Stats = mockStats;
-    const centers: Center[] = mockCenters;
+    const [stats, setStats]   = useState<Stats | null>(null);
+    const [centers, setCenters] = useState<Center[]>([]);
     const [openCenterId, setOpenCenterId] = useState<number | null>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        api.get('/stats/').then(res => setStats(res.data));
+        api.get('/centers/').then(res => setCenters(res.data));
+    }, []);
 
     return (
         <div className="page">
@@ -52,7 +57,7 @@ export default function HomePage() {
                 {STAT_CARDS.map(card => (
                     <div key={card.key} className="stat-card" style={{ borderLeftColor: card.color }}>
                         <div className="stat-card__icon">{card.icon}</div>
-                        <div className="stat-card__value">{stats[card.key]}</div>
+                        <div className="stat-card__value">{stats?.[card.key] ?? '...'}</div>
                         <div className="stat-card__label">{card.label}</div>
                     </div>
                 ))}
@@ -65,7 +70,6 @@ export default function HomePage() {
                     <div key={center.id} className="card">
                         <h3 className="section-title">{center.name}</h3>
                         <p style={{ color: 'var(--text)', margin: '0.2rem 0' }}>📞 {center.contact_phone}</p>
-                        <p style={{ color: 'var(--text)', margin: '0.2rem 0' }}>✉️ {center.email}</p>
 
                         <button
                             className="btn-primary"

@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell,
 } from 'recharts';
 import type { PieLabelRenderProps } from 'recharts';
-import { mockReports } from '../api/mockData';
+import api from '../api/axios';
 
 const PIE_COLORS = ['#74C69D', '#E9C46A', '#A8C5DA'];
 
@@ -14,12 +14,17 @@ const renderPieLabel = ({ name, percent }: PieLabelRenderProps) =>
     `${String(name)} ${(((percent ?? 0) as number) * 100).toFixed(0)}%`;
 
 export default function ReportsPage() {
-    const [period, setPeriod] = useState<'today' | 'week'>('today');
+    const [ledger, setLedger]     = useState<Row[]>([]);
+    const [occupancy, setOccupancy] = useState<Row[]>([]);
+    const [period, setPeriod]     = useState<'today' | 'week'>('today');
 
-    const ledger: Row[]    = mockReports.invoice_ledger;
-    const occupancy: Row[] = period === 'today'
-        ? mockReports.center_occupancy_today
-        : mockReports.center_occupancy_week;
+    useEffect(() => {
+        api.get('/reports/').then(res => setLedger(res.data.invoice_ledger));
+    }, []);
+
+    useEffect(() => {
+        api.get(`/reports/?period=${period}`).then(res => setOccupancy(res.data.center_occupancy));
+    }, [period]);
 
     return (
         <div className="page">
