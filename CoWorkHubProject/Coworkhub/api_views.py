@@ -48,7 +48,8 @@ def reservations_api(request):
     if request.method == 'GET':
         reservations = list(Reservation.objects.values(
             'id', 'date', 'slot', 'status', 'code',
-            'responsible_member__first_name', 'responsible_member__last_name'
+            'responsible_member__first_name', 'responsible_member__last_name',
+            'contract_id', 'invoice_id'
         ))
         return JsonResponse({'reservations': reservations})
 
@@ -79,6 +80,9 @@ def invoices_list(request):
     invoices = list(Invoice.objects.values(
         'id', 'issue_date', 'total_amount', 'tax_amount', 'status', 'type'
     ))
+    for inv in invoices:
+        inv['total_amount'] = float(inv['total_amount'])
+        inv['tax_amount'] = float(inv['tax_amount'])
     return JsonResponse({'invoices': invoices})
 
 #6. GET /api/reports/

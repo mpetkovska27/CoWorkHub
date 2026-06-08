@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-5e0ua9vu%w=b(d@1tkfxu1(^n^+lc@2y%p)#i5)mf6#d&c@n%%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
 # Application definition
@@ -80,11 +80,11 @@ WSGI_APPLICATION = 'CoWorkHubProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'coworking_db',
-        'USER': 'postgres',
-        'PASSWORD': '2703',
+        'NAME': os.environ.get('DB_NAME', 'coworking_db'),
+        'USER': os.environ.get('DB_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '2703'),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': '5432',
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 

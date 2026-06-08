@@ -77,3 +77,14 @@ VALUES ('2026-06-01', 'morning', 'confirmed', 'RES-SKP-025', 1, 1, 1),
        ('2026-06-02', 'morning', 'confirmed', 'RES-SKP-027', 1, 1, 1),
        ('2026-06-02', 'afternoon', 'confirmed', 'RES-SKP-028', 4, 1, 4),
        ('2026-06-03', 'morning', 'confirmed', 'RES-SKP-029', 2, 3, 2);
+
+-- Generate invoices via stored procedures
+CALL generate_single_invoice(1, 2, 1);
+CALL generate_single_invoice(2, 2, 5);
+CALL generate_single_invoice(3, 3, 3);
+CALL generate_single_invoice(4, 3, 4);
+CALL generate_contract_invoice(5, 1, 1);
+CALL generate_contract_invoice(6, 1, 2);
+CALL generate_contract_invoice(7, 1, 1);
+CALL generate_contract_invoice(8, 1, 4);
+CALL generate_contract_invoice(9, 3, 2);
