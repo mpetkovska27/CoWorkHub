@@ -15,11 +15,28 @@ const renderPieLabel = ({ name, percent }: PieLabelRenderProps) =>
 
 export default function ReportsPage() {
     const [ledger, setLedger]     = useState<Row[]>([]);
+    const [pieData, setPieData]   = useState<Row[]>([]);
     const [occupancy, setOccupancy] = useState<Row[]>([]);
     const [period, setPeriod]     = useState<'today' | 'week'>('today');
 
     useEffect(() => {
-        api.get('/reports/').then(res => setLedger(res.data.invoice_ledger));
+        api.get('/reports/').then(res => {
+            const raw: Row[] = res.data.invoice_ledger;
+            setLedger(raw);
+            const totals = raw.reduce(
+                (acc, row) => ({
+                    paid:     acc.paid     + (parseFloat(row.total_paid     as string) || 0),
+                    unpaid:   acc.unpaid   + (parseFloat(row.total_unpaid   as string) || 0),
+                    refunded: acc.refunded + (parseFloat(row.total_refunded as string) || 0),
+                }),
+                { paid: 0, unpaid: 0, refunded: 0 }
+            );
+            setPieData([
+                { status: 'Paid',     total_amount: totals.paid },
+                { status: 'Unpaid',   total_amount: totals.unpaid },
+                { status: 'Refunded', total_amount: totals.refunded },
+            ].filter(d => (d.total_amount as number) > 0));
+        });
     }, []);
 
     useEffect(() => {
@@ -37,7 +54,7 @@ export default function ReportsPage() {
                     <ResponsiveContainer width="100%" height={260}>
                         <PieChart>
                             <Pie
-                                data={ledger}
+                                data={pieData}
                                 dataKey="total_amount"
                                 nameKey="status"
                                 cx="50%"
