@@ -24,7 +24,7 @@ export default function ReportsPage() {
             const raw: Row[] = res.data.invoice_ledger;
             setLedger(raw);
             const totals = raw.reduce(
-                (acc, row) => ({
+                (acc: { paid: number; unpaid: number; refunded: number }, row) => ({
                     paid:     acc.paid     + (parseFloat(row.total_paid     as string) || 0),
                     unpaid:   acc.unpaid   + (parseFloat(row.total_unpaid   as string) || 0),
                     refunded: acc.refunded + (parseFloat(row.total_refunded as string) || 0),
