@@ -1,6 +1,6 @@
 #!/bin/sh
 echo "Waiting for database..."
-while ! python -c "import psycopg2; psycopg2.connect(host='db', port=5432, dbname='coworking_db', user='postgres', password='2703')" 2>/dev/null; do
+while ! python -c "import psycopg2; psycopg2.connect(host='${DB_HOST:-db}', port=${DB_PORT:-5432}, dbname='${DB_NAME:-coworking_db}', user='${DB_USER:-postgres}', password='${DB_PASSWORD}')" 2>/dev/null; do
   echo "Database not ready, retrying in 2s..."
   sleep 2
 done
