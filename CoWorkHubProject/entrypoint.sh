@@ -13,5 +13,8 @@ python manage.py migrate --fake-initial
 echo "Creating superuser..."
 echo "from django.contrib.auth import get_user_model; U = get_user_model(); U.objects.filter(username='admin').exists() or U.objects.create_superuser('admin', 'admin@admin.com', 'admin')" | python manage.py shell
 
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
+
 echo "Starting server..."
-python manage.py runserver 0.0.0.0:8000
+exec gunicorn CoWorkHubProject.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120

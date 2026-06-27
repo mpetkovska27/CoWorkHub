@@ -17,9 +17,14 @@ services:
       - ./database/queries/report_1.sql:/docker-entrypoint-initdb.d/03_report_1.sql
       - ./database/queries/report_2.sql:/docker-entrypoint-initdb.d/04_report_2.sql
       - ./database/queries/seed_data.sql:/docker-entrypoint-initdb.d/05_seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - backend_net
-  
+
   backend:
     build:
       context: ./CoWorkHubProject
@@ -31,11 +36,12 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - frontend_net
       - backend_net
-  
+
   frontend:
     build:
       context: ./frontend
@@ -43,18 +49,17 @@ services:
     container_name: coworkhub_frontend
     restart: always
     ports:
-      - "5173:5173"
+      - "3000:80"
     depends_on:
       - backend
     networks:
       - frontend_net
-  
+
 volumes:
   postgres_data:
-  
+
 networks:
   frontend_net:
     driver: bridge
   backend_net:
     driver: bridge
-    
