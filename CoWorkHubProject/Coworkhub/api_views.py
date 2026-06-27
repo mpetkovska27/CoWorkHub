@@ -2,10 +2,16 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from django.contrib import messages
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 import json
 import uuid
 from datetime import date
 from .models import CoworkingCenter, Workspace, Reservation, Invoice, Member, WorkspaceSetup, Contract
+
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
 
 # 1. GET /api/stats/
 def get_stats(request):
