@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: coworkhub
+  labels:
+    app.kubernetes.io/name: coworkhub
+    environment: production

@@ -177,15 +177,13 @@ class EquipmentComposition(models.Model):
         ]
 
 class ReservationParticipants(models.Model):
-    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, db_column='reservation_id')
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, db_column='reservation_id', primary_key=True)
     member = models.ForeignKey(Member, on_delete=models.CASCADE, db_column='member_id')
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'reservationparticipants'
-        constraints = [
-            models.UniqueConstraint(fields=['reservation', 'member'], name='uniq_res_participant'),
-        ]
+        unique_together = [('reservation', 'member')]
 
 class Membership(models.Model):
     STATUS_CHOICES = [('active', 'Active'), ('inactive', 'Inactive')]

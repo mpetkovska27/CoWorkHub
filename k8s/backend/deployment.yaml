@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coworkhub-backend
+  namespace: coworkhub
+  labels:
+    app: backend
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  minReadySeconds: 10
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      labels:
+        app: backend
+        role: backend
+
+    spec:
+      containers:
+        - name: coworkhub-backend-container
+          image: mpetkovska27/coworkhub-backend:latest
+          ports:
+            - containerPort: 8000
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /api/health/
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health/
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 3

@@ -78,6 +78,18 @@ VALUES ('2026-06-01', 'morning', 'confirmed', 'RES-SKP-025', 1, 1, 1),
        ('2026-06-02', 'afternoon', 'confirmed', 'RES-SKP-028', 4, 1, 4),
        ('2026-06-03', 'morning', 'confirmed', 'RES-SKP-029', 2, 3, 2);
 
+-- This week + today (week of 2026-06-15, today = 2026-06-18)
+INSERT INTO Reservation (date, slot, status, code, responsible_member_id, setup_id, contract_id)
+VALUES ('2026-06-15', 'morning',   'confirmed', 'RES-SKP-030', 1, 1, 1),
+       ('2026-06-15', 'afternoon', 'confirmed', 'RES-SKP-031', 3, 2, NULL),
+       ('2026-06-16', 'morning',   'confirmed', 'RES-SKP-032', 2, 3, 2),
+       ('2026-06-16', 'afternoon', 'confirmed', 'RES-SKP-033', 4, 1, 4),
+       ('2026-06-17', 'morning',   'confirmed', 'RES-SKP-034', 5, 2, NULL),
+       ('2026-06-17', 'evening',   'confirmed', 'RES-SKP-035', 1, 3, 1),
+       ('2026-06-18', 'morning',   'confirmed', 'RES-SKP-036', 2, 1, 2),
+       ('2026-06-18', 'afternoon', 'confirmed', 'RES-SKP-037', 3, 2, NULL),
+       ('2026-06-18', 'evening',   'confirmed', 'RES-SKP-038', 4, 3, 4);
+
 -- Generate invoices via stored procedures
 CALL generate_single_invoice(1, 2, 1);
 CALL generate_single_invoice(2, 2, 5);

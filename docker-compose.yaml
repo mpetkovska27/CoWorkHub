@@ -1,0 +1,65 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: coworkhub_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/queries/coworkhub.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/queries/procedures.sql:/docker-entrypoint-initdb.d/02_procedures.sql
+      - ./database/queries/report_1.sql:/docker-entrypoint-initdb.d/03_report_1.sql
+      - ./database/queries/report_2.sql:/docker-entrypoint-initdb.d/04_report_2.sql
+      - ./database/queries/seed_data.sql:/docker-entrypoint-initdb.d/05_seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_net
+
+  backend:
+    build:
+      context: ./CoWorkHubProject
+      dockerfile: Dockerfile
+    container_name: coworkhub_backend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - frontend_net
+      - backend_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: coworkhub_frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - frontend_net
+
+volumes:
+  postgres_data:
+
+networks:
+  frontend_net:
+    driver: bridge
+  backend_net:
+    driver: bridge
