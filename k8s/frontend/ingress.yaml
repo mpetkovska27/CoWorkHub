@@ -7,8 +7,9 @@ metadata:
     app: coworkhub
   annotations:
     kubernetes.io/ingress.class: "nginx"
-  
+
 spec:
+  ingressClassName: nginx
   rules:
     - host: coworkhub.local
       http:
