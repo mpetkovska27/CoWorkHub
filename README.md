@@ -7,7 +7,7 @@ A full-stack coworking space management system built with PostgreSQL, Django RES
 CoWorkHub is a web application for managing coworking spaces — centers, workspaces, reservations, invoices, members and contracts. The system consists of three services: a PostgreSQL database, a Django backend API, and a React frontend.
 
 ```
-React (5173)  →  Django API (8000)  →  PostgreSQL (5432)
+React (port 80)  →  Django API (8000)  →  PostgreSQL (5432)
 ```
 
 ## Project Structure
@@ -21,16 +21,32 @@ CoWorkHub/
 │   ├── CoWorkHubProject/
 │   │   ├── settings.py
 │   │   └── urls.py
+│   ├── Dockerfile
+│   ├── entrypoint.sh
 │   └── requirements.txt
 ├── frontend/                # React frontend
 │   ├── src/
-│   │   ├── pages/           # HomePage,            ReservationsPage, InvoicesPage, ReportsPage
+│   │   ├── pages/           # HomePage, ReservationsPage, InvoicesPage, ReportsPage
 │   │   ├── api/             # axios.ts, mockData.ts
 │   │   ├── styles/          # calendar.css
 │   │   ├── App.tsx
 │   │   └── App.css
-│   └── package.json
-└── database/                # SQL scripts (DDL, views, triggers, reports)
+│   ├── nginx.conf
+│   └── Dockerfile
+├── database/                # SQL scripts + custom PostgreSQL image
+│   ├── queries/             # DDL, views, procedures, seed data
+│   └── Dockerfile
+├── k8s/                     # Kubernetes manifests
+│   ├── namespace.yaml
+│   ├── configmap.yaml
+│   ├── secrets.yaml.example
+│   ├── argocd-app.yaml
+│   ├── backend/
+│   ├── frontend/
+│   └── database/
+├── .github/workflows/       # CI pipeline
+│   └── ci.yaml
+└── docker-compose.yaml
 ```
 
 ## Database
@@ -76,24 +92,72 @@ Single-page app with 4 pages:
 
 Built with TypeScript, CSS variables, and Axios for API communication.
 
-## Integration
+## Docker
 
-Frontend communicates with the backend via Axios (`baseURL: http://127.0.0.1:8000/api`). CORS is configured in Django to allow `localhost:5173`.
+Each service has its own Dockerfile:
+- `CoWorkHubProject/Dockerfile` — Django backend with Gunicorn
+- `frontend/Dockerfile` — React app served via Nginx
+- `database/Dockerfile` — Custom PostgreSQL image with init scripts (schema, procedures, views, seed data)
 
-## Running Locally
+## Running with Docker Compose
 
-**Backend:**
 ```bash
-cd CoWorkHubProject
-pip install -r requirements.txt
-python manage.py runserver
+docker compose up
 ```
 
-**Frontend:**
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8000/api/ |
+| Django Admin | http://localhost:8000/admin/ |
+
+Admin credentials: `admin` / `admin`
+
+## CI/CD — GitHub Actions
+
+On every push to `main`, the pipeline:
+1. Lints and checks the backend (Django system check)
+2. Lints and builds the frontend
+3. Runs backend tests against a real PostgreSQL instance
+4. Builds and pushes all 3 Docker images to DockerHub:
+   - `mpetkovska27/coworkhub-backend:latest`
+   - `mpetkovska27/coworkhub-frontend:latest`
+   - `mpetkovska27/coworkhub-db:latest`
+
+## Kubernetes
+
+Manifests are in `k8s/` and cover:
+- **Namespace** — `coworkhub`
+- **ConfigMap** — database connection and app settings
+- **Secret** — database password and Django secret key
+- **StatefulSet** — PostgreSQL with persistent volume
+- **Deployments** — backend (3 replicas) and frontend (3 replicas) with rolling updates
+- **Services** — ClusterIP for backend, frontend, and database
+- **Ingress** — Nginx ingress routing `/` to frontend and `/api` to backend
+
+### Deploy with ArgoCD
+
+ArgoCD is used for GitOps-based continuous delivery. On every push to `main`, ArgoCD automatically syncs and deploys the latest manifests to the cluster.
+
 ```bash
-cd frontend
-npm install
-npm run dev
+minikube start --driver=docker
+
+# Install ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Apply secrets (not stored in git)
+kubectl apply -f k8s/secrets.yaml
+
+# Deploy via ArgoCD
+kubectl apply -f k8s/argocd-app.yaml
+
+# Open ArgoCD UI
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+# https://localhost:8080  —  user: admin
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Open the app:
+```bash
+minikube service frontend -n coworkhub
+```
