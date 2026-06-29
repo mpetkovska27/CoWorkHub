@@ -86,3 +86,10 @@ jobs:
           context: ./frontend
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/coworkhub-frontend:latest
+      
+       - name: Build and push database
+        uses: docker/build-push-action@v5
+        with:
+          context: ./database
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/coworkhub-db:latest
